@@ -20,6 +20,7 @@ etcd_version=v3.1.12
 pod_network_cidr=10.244.0.0/16
 virtual_ip=<vip>
 network_interface=<eth0>
+smoke_test_node_port=31111
 
 [all-vms:vars]
 virtual_ip=<vip>

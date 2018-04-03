@@ -1,7 +1,0 @@
-- hosts: all-vms
-  become: yes
-  tasks:
-    - name: Disable firewalld service
-      shell: systemctl disable firewalld
-    - name: Stop firewalld service
-      shell: systemctl stop firewalld

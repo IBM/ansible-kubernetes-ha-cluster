@@ -1,7 +1,8 @@
 - import_playbook: docker.yaml
 - import_playbook: kubeadm.yaml
-- import_playbook: disable-firewalld.yaml
+- import_playbook: firewalld.yaml
 - import_playbook: ha-etcd.yaml
 - import_playbook: keepalived.yaml
 - import_playbook: kubernetes-masters.yaml
 - import_playbook: kubernetes-add-workers.yaml
+- import_playbook: smoke-test

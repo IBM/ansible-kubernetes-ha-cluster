@@ -1,0 +1,40 @@
+- name: Wait for all of the nodes to register
+  shell: kubectl get nodes
+  register: result
+  until: result.stdout.find("NotReady") == -1
+  retries: 20
+  delay: 10
+
+- name: Copy smoke test manifest
+  template:
+    src: nginx.yml.j2
+    dest: "~{{ ansible_ssh_user }}/nginx.yml"
+    owner: "{{ ansible_ssh_user }}"
+    mode: 0644
+
+- name: Deploy smoke test manifest
+  shell: kubectl apply -f nginx.yml
+  become_user: "{{ ansible_ssh_user }}"
+
+- name: Wait for smoke test app to be ready
+  shell: kubectl get po | grep nginx
+  register: result
+  until: result.stdout.find("Running") != -1
+  retries: 20
+  delay: 10
+
+- name: Pausing for 1 minute
+  pause:
+    minutes: 1
+
+- name: Access smoke test app
+  shell: "curl http://{{ item }}:{{ smoke_test_node_port }}"
+  register: result
+  until: result.stdout.find("nginx") != -1
+  with_items: "{{ groups['all-workers'] }}"
+
+- name: Get kubernetes no, po, svc
+  shell: kubectl get no,po,svc --all-namespaces
+  register: rslt
+
+- debug: var=rslt.stdout_lines
