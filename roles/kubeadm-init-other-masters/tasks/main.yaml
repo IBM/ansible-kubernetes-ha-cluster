@@ -1,0 +1,26 @@
+- name: ca.crt file from master0 to master1 and master2
+  synchronize: 
+    src: /etc/kubernetes/pki/ca.crt 
+    dest: /etc/kubernetes/pki/ca.crt
+  delegate_to: "{{ groups['all-masters'][0] }}"
+
+- name: ca.key file from master0 to master1 and master2
+  synchronize: 
+    src: /etc/kubernetes/pki/ca.key
+    dest: /etc/kubernetes/pki/ca.key
+  delegate_to: "{{ groups['all-masters'][0] }}"
+
+- name: sa.key file from master0 to master1 and master2
+  synchronize: 
+    src: /etc/kubernetes/pki/sa.key 
+    dest: /etc/kubernetes/pki/sa.key
+  delegate_to: "{{ groups['all-masters'][0] }}"
+
+- name: sa.pub file from master0 to master1 and master2
+  synchronize: 
+    src: /etc/kubernetes/pki/sa.pub 
+    dest: /etc/kubernetes/pki/sa.pub
+  delegate_to: "{{ groups['all-masters'][0] }}"      
+     
+- name: Kubeadm init
+  shell: kubeadm init --config=/tmp/kubeadm-ha/kubeadm-config.yaml --ignore-preflight-errors=all

@@ -1,0 +1,23 @@
+- name: upgrade kubelet 
+  yum:
+    name: kubelet
+    state: {{kubelet_version}}
+
+- replace:
+    path: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+    regexp: 'KUBELET_KUBECONFIG_ARGS='
+    replace: 'KUBELET_KUBECONFIG_ARGS=--fail-swap-on=false '
+    backup: no
+
+- replace:
+    path: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+    regexp: 'cadvisor-port=0'
+    replace: 'cadvisor-port=4194'
+    backup: no
+
+- name: restart kubelet
+  systemd:
+    state: restarted
+    daemon_reload: yes
+    name: kubelet
+    enabled: yes

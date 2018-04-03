@@ -1,0 +1,19 @@
+apiVersion: kubeadm.k8s.io/v1alpha1
+kind: MasterConfiguration
+kubernetesVersion: {{kubernetes_version}}
+networking:
+  podSubnet: {{pod_network_cidr}}
+{% if groups["all-masters"] | length > 1 %}
+apiServerCertSANs:
+- {{virtual_ip}}
+{% endif %}
+etcd:
+  endpoints:
+{% for master in groups["all-masters"] %}
+  - https://{{hostvars[master]['ansible_usehost']}}:2379
+{% endfor %}
+  caFile: /etc/kubernetes/pki/etcd/ca.pem
+  certFile: /etc/kubernetes/pki/etcd/client.pem
+  keyFile: /etc/kubernetes/pki/etcd/client-key.pem
+apiServerExtraArgs:
+  endpoint-reconciler-type: lease

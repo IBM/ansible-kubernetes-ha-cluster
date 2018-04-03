@@ -1,0 +1,25 @@
+- name: change k8s scheduler and controller config
+  become: yes
+  replace: 
+    path: "{{item}}"
+    regexp: '--address=127.0.0.1'
+    replace: '--address=0.0.0.0'
+  with_items:
+    - /etc/kubernetes/controller-manager.conf
+    - /etc/kubernetes/scheduler.conf
+    - /etc/kubernetes/manifests/kube-scheduler.yaml
+    - /etc/kubernetes/manifests/kube-controller-manager.yaml
+
+- name: restart docker
+  systemd: 
+    name: docker 
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
+    
+- name: restart kubelet
+  systemd: 
+    name: kubelet 
+    state: restarted
+    daemon_reload: yes
+    enabled: yes

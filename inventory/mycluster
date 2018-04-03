@@ -1,0 +1,27 @@
+[all-vms]
+<hostname1> ansible_usehost=<ip>  ansible_user=root
+<hostname2> ansible_usehost=<ip>  ansible_user=root
+<hostname3> ansible_usehost=<ip>  ansible_user=root
+<hostname4> ansible_usehost=<ip>  ansible_user=root
+<hostname5> ansible_usehost=<ip>  ansible_user=root
+
+[all-masters]
+<hostname1> ansible_usehost=<ip>  ansible_user=root
+<hostname2> ansible_usehost=<ip>  ansible_user=root
+<hostname3> ansible_usehost=<ip>  ansible_user=root
+
+[all-workers]
+<hostname4> ansible_usehost=<ip>  ansible_user=root
+<hostname5> ansible_usehost=<ip>  ansible_user=root
+
+[all-masters:vars]
+kubernetes_version=1.9.6
+etcd_version=v3.1.12
+pod_network_cidr=10.244.0.0/16
+virtual_ip=<vip>
+network_interface=<eth0>
+
+[all-vms:vars]
+virtual_ip=<vip>
+cgroup_driver=<cgroup used by docker>
+kubelet_version=1.9.6-0

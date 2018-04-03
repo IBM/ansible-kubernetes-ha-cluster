@@ -1,0 +1,9 @@
+- name: Create /tmp/kubeadm-ha directory
+  file:
+    path: /tmp/kubeadm-ha
+    state: directory    
+
+- name: Copy kubeadm init config
+  template:
+    src: kubeadm-config.yaml
+    dest: /tmp/kubeadm-ha/kubeadm-config.yaml

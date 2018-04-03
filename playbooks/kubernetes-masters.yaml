@@ -1,0 +1,26 @@
+- hosts: all-masters
+  become: yes
+  roles:
+    - kubeadm-init-prep
+
+- hosts: all-masters[0]
+  become: yes
+  roles:
+    - kubeadm-init-first-master
+  
+
+- hosts: all-masters
+  become: yes
+  roles:
+    - { role: kubeadm-init-other-masters, when: "groups['all-masters'][0] != inventory_hostname" }
+    
+
+- hosts: all-masters[0]
+  become: yes
+  roles:
+    - flannel
+  
+- hosts: all-masters
+  become: yes
+  roles:
+    - config-scheduler-and-controller

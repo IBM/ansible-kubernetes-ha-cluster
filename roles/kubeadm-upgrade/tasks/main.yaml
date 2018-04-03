@@ -1,0 +1,7 @@
+- name: upgrade kubeadm
+  yum:
+    name: kubeadm
+    state: {{kubeadm_version}}
+    
+- name: Run kubeadm upgrade
+  shell: kubeadm upgrade apply {{upgrade_version}}

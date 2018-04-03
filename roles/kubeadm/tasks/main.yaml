@@ -1,0 +1,56 @@
+- name: Add kubernetes repo
+  yum_repository:
+    name: kubernetes
+    description: Kubernetes repo
+    baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-$basearch
+    gpgkey: https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+    gpgcheck: yes
+
+- name: set enforce
+  command: setenforce 0
+
+- name: install kubeadm packages
+  become: yes
+  yum:
+    name: "{{item}}"
+    allow_downgrade: yes 
+  with_items:
+    - kubelet-{{kubelet_version}}
+    - kubeadm
+    - kubectl
+    - rsync
+
+- replace:
+    path: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+    regexp: 'KUBELET_KUBECONFIG_ARGS='
+    replace: 'KUBELET_KUBECONFIG_ARGS=--fail-swap-on=false '
+    backup: no
+
+- replace:
+    path: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+    regexp: '--cgroup-driver=systemd'
+    replace: '--cgroup-driver={{cgroup_driver}}'
+    backup: no
+
+- replace:
+    path: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+    regexp: 'cadvisor-port=0'
+    replace: 'cadvisor-port=4194'
+    backup: no
+  
+- name: modprobe
+  command: modprobe br_netfilter
+
+
+- name: Set net.bridge.bridge-nf-call-ip6tables=1
+  command: sysctl net.bridge.bridge-nf-call-ip6tables=1
+
+- name: Set sysctl net.bridge.bridge-nf-call-iptables=1
+  command: sysctl net.bridge.bridge-nf-call-iptables=1 
+
+- name: restart kubelet
+  systemd:
+    state: restarted
+    daemon_reload: yes
+    name: kubelet
+    enabled: yes

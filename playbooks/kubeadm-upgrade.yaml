@@ -1,0 +1,14 @@
+- hosts: all-masters[0]
+  become: yes
+  vars:
+    upgrade_version: v1.9.6
+    kubeadm_version: latest
+  roles:
+    - kubeadm-upgrade
+
+- hosts: all-vms
+  become: yes
+  vars:
+    kubelet_version: latest
+  roles:
+    - update-kubelet

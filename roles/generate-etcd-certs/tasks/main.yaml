@@ -1,0 +1,21 @@
+- name: Copy ca-cert config files
+  copy:
+    src: certs/
+    dest: /etc/kubernetes/pki/etcd/
+    owner: root
+    group: root
+    directory_mode : true
+
+- name: Generate CA certs 
+  shell: |
+    cd /etc/kubernetes/pki/etcd
+    cfssl gencert -initca ca-csr.json | cfssljson -bare ca -
+  args:
+    executable: /bin/bash
+
+- name: Generate etcd client certs
+  shell: |
+    cd /etc/kubernetes/pki/etcd
+    cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=client client.json | cfssljson -bare client
+  args:
+    executable: /bin/bash

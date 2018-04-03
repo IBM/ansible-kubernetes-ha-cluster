@@ -1,0 +1,33 @@
+- name: install docker dependencies
+  become: yes
+  yum:
+    name: "{{item}}"
+  with_items:
+    - yum-utils
+    - device-mapper-persistent-data
+    - lvm2
+    - policycoreutils-python
+
+- name: Install container-selinux rpm from a remote repo
+  yum:
+    name: http://ns3.centos.org/7.3.1611/extras/x86_64/Packages/container-selinux-2.9-4.el7.noarch.rpm
+    state: present
+
+# - name: Enable extra repos
+#   command: subscription-manager repos --enable=rhel-7-server-extras-rpms
+
+- name: Add docker-ce repo
+  command: yum-config-manager  --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+
+
+- name: Installs docker
+  yum: 
+    name: docker-ce
+    state: installed     
+
+- name: restart docker
+  systemd: 
+    name: docker 
+    state: restarted
+    daemon_reload: yes
+    enabled: yes

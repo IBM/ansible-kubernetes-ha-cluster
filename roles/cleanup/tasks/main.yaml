@@ -1,0 +1,28 @@
+- name: cleanup kubernetes data
+  shell: |
+    kubeadm reset
+    systemctl stop kubelet
+    systemctl stop docker
+    systemctl stop etcd
+    systemctl stop keepalived
+    rm -rf /var/lib/cni/
+    rm -rf /var/lib/kubelet/*
+    rm -rf /etc/keepalived/*
+    rm -rf /etc/cni/
+    rm -r /var/lib/etcd/member
+    ip link delete cni0
+    ip link delete flannel.1
+
+- name: restart kubelet
+  systemd: 
+    name: kubelet 
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
+
+- name: restart docker
+  systemd: 
+    name: docker 
+    state: restarted
+    daemon_reload: yes
+    enabled: yes

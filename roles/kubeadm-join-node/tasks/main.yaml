@@ -1,0 +1,15 @@
+- name: Read kubeadm init output
+  shell: cat {{ kubeadm_join_cmd_file_path }}
+  register: kubeadm_join_cmd_file_content
+  delegate_to: "{{ groups['all-masters'][0] }}"
+
+- set_fact:
+    kubeadm_join: "{{ kubeadm_join_cmd_file_content.stdout | regex_replace('(?s).*(kubeadm join.*)$', '\\1') }}"
+
+- debug: var=kubeadm_join
+
+- name: Store join command
+  action: copy content="{{ kubeadm_join }}" dest="/etc/kubernetes/kubeadm-join.command"
+
+- name: Run kubeadm join
+  shell: "{{ kubeadm_join }} --ignore-preflight-errors=swap"

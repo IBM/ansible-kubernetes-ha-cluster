@@ -1,0 +1,75 @@
+- name: Generate etcd certs for each master node
+  shell: |
+    cd /etc/kubernetes/pki/etcd
+    cfssl print-defaults csr > config.json
+  args:
+    executable: /bin/bash
+
+- replace:
+    path: /etc/kubernetes/pki/etcd/config.json
+    regexp: 'CN/{s/example\.net'
+    replace: "{{ inventory_hostname }}"
+    backup: no
+
+- replace:
+    path: /etc/kubernetes/pki/etcd/config.json
+    regexp: 'www\.example\.net'
+    replace: "{{ hostvars[inventory_hostname]['ansible_usehost'] }}"
+    backup: no
+
+- replace:
+    path: /etc/kubernetes/pki/etcd/config.json
+    regexp: 'example\.net'
+    replace: "{{ inventory_hostname }}"
+    backup: no
+
+- name: Generate etcd peer certs for each master node
+  shell: |
+    cd /etc/kubernetes/pki/etcd
+    cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=server config.json | cfssljson -bare server
+  args:
+    executable: /bin/bash
+
+- name: Generate etcd server certs for each master node
+  shell: |
+    cd /etc/kubernetes/pki/etcd
+    cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=peer config.json | cfssljson -bare peer
+  args:
+    executable: /bin/bash
+
+- name: Download and Unarchive etcd
+  unarchive:
+    src: https://github.com/coreos/etcd/releases/download/{{ etcd_version }}/etcd-{{ etcd_version }}-linux-amd64.tar.gz
+    dest: /tmp/
+    remote_src: yes
+      
+- name: Install etcd
+  copy:
+    src: /tmp/etcd-{{ etcd_version }}-linux-amd64/etcd
+    dest: /usr/local/bin/etcd
+    mode: 0710
+    remote_src: yes
+    
+- name: Install etcdctl
+  copy:
+    src: /tmp/etcd-{{ etcd_version }}-linux-amd64/etcdctl
+    dest: /usr/local/bin/etcdctl
+    mode: 0710
+    remote_src: yes
+
+- name: Copy etcd config file
+  template:
+    src: etcd.service
+    dest: /etc/systemd/system/etcd.service
+
+- name: Copy etcd.env config file
+  template:
+    src: etcd.env
+    dest: /etc/etcd.env
+
+- name: start and enable etcd
+  systemd: 
+    name: etcd 
+    enabled: yes 
+    daemon_reload: yes
+    state: started

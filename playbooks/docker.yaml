@@ -1,0 +1,6 @@
+- hosts: all-vms
+  become: yes
+  roles:
+    - docker
+
+

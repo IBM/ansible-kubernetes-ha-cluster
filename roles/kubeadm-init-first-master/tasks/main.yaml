@@ -1,0 +1,21 @@
+- name: Kubeadm init
+  shell: kubeadm init --config=/tmp/kubeadm-ha/kubeadm-config.yaml --ignore-preflight-errors=all
+  register: rslt
+
+- name: Store init output
+  action: copy content="{{ rslt.stdout }}" dest="/etc/kubernetes/kubeadm-init.stdout"
+
+- name: Create .kube folder
+  file:
+    path: "~{{ ansible_ssh_user }}/.kube"
+    state: directory
+    owner: "{{ ansible_ssh_user }}"
+    group: "{{ ansible_ssh_user }}"
+
+- name: Copy admin.conf to .kube folder
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: "~{{ ansible_ssh_user }}/.kube/config"
+    owner: "{{ ansible_ssh_user }}"
+    group: "{{ ansible_ssh_user }}"
+    remote_src: yes
