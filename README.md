@@ -22,6 +22,8 @@ pip install ansible
 
 * Setup ssh access from master to workers.
 
+# Environment preparation:
+
 * Clone the repo:
  In the machine that you want to use as ansible master (can be your laptop or any other machine that has ssh access to the target machines):
  ```
@@ -48,6 +50,7 @@ You can check that you can ping all the machines:
 ```
 ansible -m ping all -i inventory/mycluster
 ```
+# Install a highly available kubernetes using kubeadm
 
 You can now run k8s-all playbook to get your cluster setup.
 You can also run the different playbooks separately for different purposes (setting up docker, etcd, keepalived, kubeadm ...).
@@ -56,7 +59,7 @@ You can also run the different playbooks separately for different purposes (sett
 ansible-playbook -i inventory/mycluster  playbooks/k8s-all.yaml
 ```
 
-* What k8s-all.yaml includes:
+# What k8s-all.yaml includes:
 
 - Installing docker
 - Generating etcd certificates and installing ha etcd cluster on all the master nodes
@@ -66,11 +69,11 @@ ansible-playbook -i inventory/mycluster  playbooks/k8s-all.yaml
 - Adding the nodes to the cluster
 - Reconfiguring the nodes and components to use the vip
 
-* Restarting the install:
+# Restarting the install:
 
 If you need to restart the process using kubeadm reset, please use the cleanup-all-vms playbook that deletes the state from all vms. Some of the commands might fail but you can ignore that.
 
-* Work in progress:
+# Work in progress:
 We will add the following items to this repository:
 - Setting up firewalld in a more secure way
 - Adding test playbooks
