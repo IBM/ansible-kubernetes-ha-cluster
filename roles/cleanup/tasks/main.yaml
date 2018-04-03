@@ -12,6 +12,7 @@
     rm -r /var/lib/etcd/member
     ip link delete cni0
     ip link delete flannel.1
+    mkdir -p /etc/keepalived
 
 - name: restart kubelet
   systemd: 
