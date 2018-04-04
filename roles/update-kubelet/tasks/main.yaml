@@ -1,7 +1,7 @@
 - name: upgrade kubelet 
   yum:
     name: kubelet
-    state: {{kubelet_version}}
+    state: "{{kubelet_version}}"
 
 - replace:
     path: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf

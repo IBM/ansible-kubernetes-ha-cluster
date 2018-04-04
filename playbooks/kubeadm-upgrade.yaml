@@ -3,6 +3,7 @@
   vars:
     upgrade_version: v1.9.6
     kubeadm_version: latest
+  ignore_errors: yes
   roles:
     - kubeadm-upgrade
 
@@ -12,3 +13,4 @@
     kubelet_version: latest
   roles:
     - update-kubelet
+

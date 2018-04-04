@@ -15,7 +15,9 @@
 <hostname5> ansible_usehost=<ip>  ansible_user=root
 
 [all-masters:vars]
-kubernetes_version=1.9.6
+kubernetes_version=1.10.0
+kubelet_version=1.10.0-0
+kubeadm_version=1.10.0
 etcd_version=v3.1.12
 pod_network_cidr=10.244.0.0/16
 virtual_ip=<vip>
