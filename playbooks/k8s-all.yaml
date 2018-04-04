@@ -5,4 +5,4 @@
 - import_playbook: keepalived.yaml
 - import_playbook: kubernetes-masters.yaml
 - import_playbook: kubernetes-add-workers.yaml
-- import_playbook: smoke-test
+- import_playbook: smoke-test.yaml
