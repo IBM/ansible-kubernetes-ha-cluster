@@ -1,0 +1,22 @@
+- name: Backup kube-apiserver.yaml
+  shell: cp /etc/kubernetes/manifests/kube-apiserver.yaml /tmp/kube-apiserver.yaml.$(date +%Y%m%d%H%M%S)
+  
+- name: copy encryption config file
+  template:
+    src: enc-config.yaml.j2
+    dest: /etc/kubernetes/enc-config.yaml
+
+- name: Add runtime-config to kube-apiserver
+  lineinfile:
+    dest: /etc/kubernetes/manifests/kube-apiserver.yaml
+    regexp: '   - --experimental-encryption-provider-config=/etc/kubernetes/enc-config.yaml'
+    line: '   - --experimental-encryption-provider-config=/etc/kubernetes/enc-config.yaml'
+    insertbefore: '- --etcd-servers='
+    backup: no
+
+- name: restart kubelet
+  systemd: 
+    name: kubelet 
+    enabled: yes 
+    daemon_reload: yes
+    state: started

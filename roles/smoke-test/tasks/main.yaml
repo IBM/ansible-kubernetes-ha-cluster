@@ -8,13 +8,11 @@
 - name: Copy smoke test manifest
   template:
     src: nginx.yml.j2
-    dest: "~{{ ansible_ssh_user }}/nginx.yml"
-    owner: "{{ ansible_ssh_user }}"
+    dest: "/tmp/nginx.yml"
     mode: 0644
 
 - name: Deploy smoke test manifest
-  shell: kubectl apply -f nginx.yml
-  become_user: "{{ ansible_ssh_user }}"
+  shell: kubectl apply -f /tmp/nginx.yml
 
 - name: Wait for smoke test app to be ready
   shell: kubectl get po | grep nginx

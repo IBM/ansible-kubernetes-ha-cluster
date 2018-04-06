@@ -1,0 +1,16 @@
+- name: Backup kube-apiserver.yaml
+  shell: cp /etc/kubernetes/manifests/kube-apiserver.yaml /tmp/kube-apiserver.yaml.$(date +%Y%m%d%H%M%S)
+  
+- name: Add runtime-config to kube-apiserver
+  lineinfile:
+    dest: /etc/kubernetes/manifests/kube-apiserver.yaml
+    regexp: '--runtime-config'
+    line: '    - --runtime-config=settings.k8s.io/v1alpha1=true'
+    insertbefore: '--etcd-servers='
+    backup: no
+
+- replace:
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+    regexp: '--admission-control='
+    replace: '--admission-control=PodPreset,'
+    backup: no

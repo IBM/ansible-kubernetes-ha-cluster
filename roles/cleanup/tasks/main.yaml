@@ -13,7 +13,6 @@
     ip link delete cni0
     ip link delete flannel.1
     mkdir -p /etc/keepalived
-
 - name: restart kubelet
   systemd: 
     name: kubelet 

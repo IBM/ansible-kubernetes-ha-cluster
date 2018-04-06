@@ -1,0 +1,18 @@
+- name: Copy manifest of heapster
+  template:
+    src: heapster.yml.j2
+    dest: /tmp/heapster.yml
+
+- name: Deploy heapster
+  shell: kubectl apply -f /tmp/heapster.yml
+
+- name: Pausing for 1 minute
+  pause:
+    minutes: 1
+
+- name: Run kubectl top no
+  shell: kubectl top no
+  register: result
+  until: result.rc == 0
+  retries: 20
+  delay: 10

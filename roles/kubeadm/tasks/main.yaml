@@ -14,7 +14,7 @@
 
 - name: Turn swap off
   shell: swapoff -a
-  
+
 - name: set enforce
   command: setenforce 0
 
@@ -37,7 +37,7 @@
 
 - replace:
     path: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-    regexp: '--cgroup-driver=systemd'
+    regexp: '--cgroup-driver=systemdcgroupfs'
     replace: '--cgroup-driver={{cgroup_driver}}'
     backup: no
 

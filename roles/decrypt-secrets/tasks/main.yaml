@@ -1,0 +1,11 @@
+- name: copy encryption config file
+  template:
+    src: enc-config.yaml.j2
+    dest: /etc/kubernetes/enc-config.yaml
+
+- name: restart kubelet
+  systemd: 
+    name: kubelet 
+    enabled: yes 
+    daemon_reload: yes
+    state: started

@@ -73,10 +73,27 @@ ansible-playbook -i inventory/mycluster  playbooks/k8s-all.yaml
 
 If you need to restart the process using kubeadm reset, please use the cleanup-all-vms playbook that deletes the state from all vms. Some of the commands might fail but you can ignore that.
 
+# Encrypting Secrets at rest:
+
+If you want to add an extra layer of securing your secrets by encrypting them at rest you can use the "encrypting-secrets.yaml playbook". You can add it to the k8s-all.yaml or use it separately.
+
+Before using it, update the inventory file to change the encryption key variable "encoded_secret".
+To generate a new encryption key you can do the following:
+
+```
+head -c 32 /dev/urandom | base64
+```
+Copy the output and save it in the inventory variable.
+
+After that run the playbook:
+
+```
+ansible-playbook -i inventory/mycluster  playbooks/encrypting-secrets.yaml
+```
+
 # Work in progress:
 We will add the following items to this repository:
-- Setting up firewalld in a more secure way
-- Adding test playbooks
+
 - Kubeadm upgrade playbook
 - Adding the possibility of using other user then root
 - Addons, Prometheus support?
