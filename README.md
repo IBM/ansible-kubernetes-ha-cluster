@@ -21,6 +21,7 @@ pip install ansible
 ```
 
 * Setup ssh access from master to workers.
+* Setup ssh access from first master to the other masters (optional to be able to use scp)
 
 # Environment preparation:
 
