@@ -1,5 +1,5 @@
 - name: Kubeadm init
-  shell: kubeadm init --config=/tmp/kubeadm-ha/kubeadm-config.yaml --ignore-preflight-errors=all
+  shell: kubeadm init --config=/tmp/kubeadm-ha/kubeadm-config.yaml --ignore-preflight-errors=swap,crictl
   register: rslt
 
 - name: Store init output
