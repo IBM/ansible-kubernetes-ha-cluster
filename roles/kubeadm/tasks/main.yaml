@@ -37,7 +37,7 @@
 
 - replace:
     path: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-    regexp: '--cgroup-driver=systemdcgroupfs'
+    regexp: '--cgroup-driver=(systemd|cgroupfs)'
     replace: '--cgroup-driver={{cgroup_driver}}'
     backup: no
 
