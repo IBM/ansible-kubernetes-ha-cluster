@@ -26,5 +26,4 @@ smoke_test_node_port=31111
 
 [all-vms:vars]
 virtual_ip=<vip>
-cgroup_driver=<cgroup used by docker>
 kubelet_version=1.9.6-0
