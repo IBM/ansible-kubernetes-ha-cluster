@@ -35,10 +35,15 @@
     replace: 'KUBELET_KUBECONFIG_ARGS=--fail-swap-on=false '
     backup: no
 
+- name: detect docker's cgroup-driver
+  shell: docker info 2>/dev/null |grep -i cgroup | cut -d":" -f2 | tr -d " "
+  register: docker_cgroup_driver
+  changed_when: false
+  
 - replace:
     path: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
     regexp: '--cgroup-driver=(systemd|cgroupfs)'
-    replace: '--cgroup-driver={{cgroup_driver}}'
+    replace: '--cgroup-driver={{docker_cgroup_driver}}'
     backup: no
 
 - replace:
