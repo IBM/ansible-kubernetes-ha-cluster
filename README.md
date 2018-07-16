@@ -39,6 +39,13 @@ and declare your machines such as:
 myhostname.domain.com ansible_usehost=<ip>
 ```
 
+Also make sure to update the `vars` section:
+- choose the desired versions for kubernetes and docker
+- setup the pod network cidr (default setup is for flannel)
+- Setup the eviction hard properties for workers and masters
+- Choose whether you want to use a private setup or a public one, with a private setup, you need to provide the credentials to get the yum packages and docker images.
+- Specify the network zone for firewalld setup (default is public) 
+
 There are different groups being defined and used, you can reuse mycluster file defined in inventory folder:
 ```
 [dc1-k8s-masters] # these are all the masters of datacenter 1 (DC1)
