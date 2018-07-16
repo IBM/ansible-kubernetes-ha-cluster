@@ -1,0 +1,11 @@
+- hosts: new-k8s-masters
+  become: yes
+  roles:
+    - docker
+    - firewalld
+    - keepalived
+    - kubeadm
+    - kubeadm-init-prep
+    - sync-etcd-certs
+    - { role: kubeadm-init-other-masters, when: "groups['k8s-masters'][0] != inventory_hostname" }
+    - config-scheduler-and-controller

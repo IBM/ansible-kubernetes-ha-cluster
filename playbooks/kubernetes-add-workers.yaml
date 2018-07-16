@@ -1,16 +1,6 @@
-- hosts: all-workers 
-  vars:
-    kubeadm_join_cmd_file_path: "/etc/kubernetes/kubeadm-init.stdout"
+- hosts: k8s-workers 
   become: yes
   roles:
     - kubeadm-join-node
-
-- hosts: all-masters[0]
-  become: yes
-  roles:
-    - reconfig-proxy
-
-- hosts: all-vms
-  become: yes
-  roles:
-    - reconfig-kubelet
+  #  - config-kubelet
+    

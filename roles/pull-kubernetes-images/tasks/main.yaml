@@ -1,0 +1,8 @@
+- name: "Pulling image {{ item }}"
+  shell: docker pull "{{ item }}"
+  with_items:
+    - "{{ kubeapi_server_container_image }}"
+    - "{{ kubescheduler_container_image }}"
+    - "{{ kubecontroller_manager_container_image }}"
+
+    

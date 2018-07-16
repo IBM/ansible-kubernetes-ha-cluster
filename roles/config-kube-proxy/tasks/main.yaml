@@ -1,0 +1,15 @@
+- name: Get config map for the kube-proxy
+  shell: kubectl --kubeconfig=/tmp/kubeadm-ha/config get configmap -n kube-system kube-proxy -o yaml > /tmp/kube-proxy-cm.yaml
+
+- replace:
+    path: /tmp/kube-proxy-cm.yaml
+    regexp: 'server:.*'
+    replace: "server: https://localhost:{{ha_proxy_port}}"
+    backup: no
+  
+ 
+- name: Apply the change to the config map
+  shell: kubectl --kubeconfig=/tmp/kubeadm-ha/config apply -f /tmp/kube-proxy-cm.yaml --force
+
+- name: Delete all kube-proxy instances to make them restart with the new configuration
+  shell: kubectl --kubeconfig=/tmp/kubeadm-ha/config delete pod -n kube-system -l k8s-app=kube-proxy

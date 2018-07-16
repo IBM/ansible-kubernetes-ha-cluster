@@ -1,0 +1,10 @@
+- name: "copy {{item}} to other masters"
+  copy:
+    src: "/tmp/etcd/{{item}}"
+    dest: "/etc/kubernetes/pki/etcd/{{item}}"
+  with_items:
+    - ca-config.json
+    - ca.pem
+    - ca-key.pem
+    - client.pem
+    - client-key.pem

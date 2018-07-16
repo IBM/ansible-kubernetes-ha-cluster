@@ -1,11 +1,3 @@
-- name: Add kubernetes repo
-  yum_repository:
-    name: kubernetes
-    description: Kubernetes repo
-    baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-$basearch
-    gpgkey: https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
-    gpgcheck: yes
-
 - name: Remove swapfile from /etc/fstab
   mount:
     name: swap
@@ -27,18 +19,15 @@
     - kubelet-{{kubelet_version}}
     - kubeadm
     - kubectl
-    - rsync
 
+- name: detect docker's cgroup-driver
+  shell: docker info 2>/dev/null |grep -i cgroup | cut -d":" -f2 | tr -d " "
+  register: docker_cgroup_driver
+  
 - replace:
     path: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-    regexp: 'KUBELET_KUBECONFIG_ARGS='
-    replace: 'KUBELET_KUBECONFIG_ARGS=--fail-swap-on=false '
-    backup: no
-
-- replace:
-    path: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-    regexp: '--cgroup-driver=systemdcgroupfs'
-    replace: '--cgroup-driver={{cgroup_driver}}'
+    regexp: '--cgroup-driver=(systemd|cgroupfs)'
+    replace: '--cgroup-driver={{docker_cgroup_driver.stdout}}'
     backup: no
 
 - replace:
@@ -50,16 +39,58 @@
 - name: modprobe
   command: modprobe br_netfilter
 
+- name: Add netbridge config ip6
+  lineinfile:
+    path: /etc/sysctl.d/k8s.conf
+    line: 'net.bridge.bridge-nf-call-ip6tables = 1'
+    state: present
+    create: yes
 
-- name: Set net.bridge.bridge-nf-call-ip6tables=1
-  command: sysctl net.bridge.bridge-nf-call-ip6tables=1
+- name: Add netbridge config ip4
+  lineinfile:
+    path: /etc/sysctl.d/k8s.conf
+    line: 'net.bridge.bridge-nf-call-iptables = 1'
+    state: present
+    create: yes
 
-- name: Set sysctl net.bridge.bridge-nf-call-iptables=1
-  command: sysctl net.bridge.bridge-nf-call-iptables=1 
+- name: update sysctl
+  command: sysctl --system
 
-- name: restart kubelet
-  systemd:
-    state: restarted
-    daemon_reload: yes
-    name: kubelet
-    enabled: yes
+- set_fact:
+   eviction_hard: "{{ kubelet_masters_eviction_hard }} "
+  when: inventory_hostname in groups["k8s-masters"]
+
+- set_fact:
+   eviction_hard: "{{ kubelet_workers_eviction_hard }} "
+  when: inventory_hostname in groups["k8s-workers"]
+
+- name: change pause container to private registry and add eviction hard
+  lineinfile:
+    path: /etc/systemd/system/kubelet.service.d/20-pod-infra-image.conf
+    create: yes
+    state: present
+    line: |
+       [Service]
+       Environment="KUBELET_EXTRA_ARGS=--pod-infra-container-image={{kubepause_container_image}} --eviction-hard={{eviction_hard}}"
+
+
+
+
+
+- name: "Pulling image {{ item }}"
+  shell: docker pull "{{ item }}"
+  with_items:
+    - "{{ kubeproxy_container_image }}"
+    - "{{ kubepause_container_image }}"
+    - "{{ flannel_container_image }}"
+    - "{{ heapster_container_image }}"
+    - "{{ kubedns_container_image }}"
+    - "{{ kubednsmasq_container_image }}"
+    - "{{ kubednssidecar_container_image }}"
+ 
+#- name: restart kubelet
+#  systemd:
+#    state: restarted
+#    daemon_reload: yes
+#    name: kubelet
+#    enabled: yes

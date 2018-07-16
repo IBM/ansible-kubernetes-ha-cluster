@@ -2,20 +2,30 @@
   copy:
     src: certs/
     dest: /etc/kubernetes/pki/etcd/
-    owner: root
-    group: root
+    # owner: root
+    # group: root
     directory_mode : true
 
 - name: Generate CA certs 
   shell: |
     cd /etc/kubernetes/pki/etcd
-    cfssl gencert -initca ca-csr.json | cfssljson -bare ca -
-  args:
-    executable: /bin/bash
+    /usr/local/bin/cfssl gencert -initca ca-csr.json | /usr/local/bin/cfssljson -bare ca -
+
 
 - name: Generate etcd client certs
   shell: |
     cd /etc/kubernetes/pki/etcd
-    cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=client client.json | cfssljson -bare client
-  args:
-    executable: /bin/bash
+    /usr/local/bin/cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=client client.json | /usr/local/bin/cfssljson -bare client
+
+- name: get etcd certs locally from master0
+  become: yes
+  fetch:
+    src: /etc/kubernetes/pki/etcd/{{item}}
+    dest: /tmp/etcd/{{item}}
+    flat: yes
+  with_items:
+    - ca-config.json
+    - ca.pem
+    - ca-key.pem
+    - client.pem
+    - client-key.pem    

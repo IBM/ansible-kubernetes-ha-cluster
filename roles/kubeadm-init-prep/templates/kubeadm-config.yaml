@@ -3,13 +3,20 @@ kind: MasterConfiguration
 kubernetesVersion: {{kubernetes_version}}
 networking:
   podSubnet: {{pod_network_cidr}}
-{% if groups["all-masters"] | length > 1 %}
+{% if groups["k8s-masters"] | length > 1 %}
 apiServerCertSANs:
+{% if virtual_ip is defined %}
 - {{virtual_ip}}
+{% endif %}
+{% for master in groups["k8s-masters"] %}
+- {{hostvars[master]['ansible_usehost']}}
+{% endfor %}
+- localhost
 {% endif %}
 etcd:
   endpoints:
-{% for master in groups["all-masters"] %}
+  - https://localhost:{{etcd_proxy_port}}
+{% for master in groups["k8s-masters"] %}
   - https://{{hostvars[master]['ansible_usehost']}}:2379
 {% endfor %}
   caFile: /etc/kubernetes/pki/etcd/ca.pem
@@ -17,3 +24,4 @@ etcd:
   keyFile: /etc/kubernetes/pki/etcd/client-key.pem
 apiServerExtraArgs:
   endpoint-reconciler-type: lease
+imageRepository: {{docker_registry| trim}}/kubernetes

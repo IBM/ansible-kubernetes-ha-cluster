@@ -1,10 +1,13 @@
 - name: cleanup kubernetes data
   shell: |
     kubeadm reset
+    docker kill haproxy
+    docker rm haproxy
     systemctl stop kubelet
     systemctl stop docker
     systemctl stop etcd
     systemctl stop keepalived
+    rm /etc/systemd/system/kubelet.service.d/20-pod-infra-image.conf
     rm -rf /var/lib/cni/
     rm -rf /var/lib/kubelet/*
     rm -rf /etc/keepalived/*
@@ -13,16 +16,64 @@
     ip link delete cni0
     ip link delete flannel.1
     mkdir -p /etc/keepalived
-- name: restart kubelet
-  systemd: 
-    name: kubelet 
-    state: restarted
-    daemon_reload: yes
-    enabled: yes
+    rm -rf /var/lib/docker
+    rm /usr/local/bin/etcd
+    rm /usr/local/bin/etcdctl
+    rm /usr/local/bin/cfssljson
+    rm /usr/local/bin/cfssl
+    rm -rf /etc/kubernetes
 
-- name: restart docker
-  systemd: 
-    name: docker 
-    state: restarted
-    daemon_reload: yes
-    enabled: yes
+# - name: Close ports
+#   firewalld:
+#     port: "{{item}}"
+#     permanent: true
+#     state: disabled
+#   with_items:
+#     - 6443/tcp
+#     - 2379-2380/tcp
+#     - 10250/tcp
+#     - 10251/tcp
+#     - 10252/tcp
+#     - 10053/tcp
+#     - 10053/udp
+#     - 10255/tcp
+#     - 30000-32767/tcp
+#     - 8082/tcp
+#     - 8472/udp
+#     - 8285/udp
+#     - 9898/tcp
+#     - 9100/tcp
+#     - 4194/tcp
+#     - 10254/tcp
+
+- name: remove yum packages
+  become: yes
+  yum:
+    name: "{{item}}"
+    state: absent
+  with_items:
+    - kubelet
+    - kubeadm
+    - kubectl
+    - docker-ce
+    - yum-utils
+    - device-mapper-persistent-data
+    - lvm2
+    - policycoreutils-python
+    - python-pip
+    - container-selinux
+
+- name: Remove Artifactory repo
+  yum_repository:
+    name: Artifactory
+    state: absent
+
+- name: Remove docker-ce-stable repo
+  yum_repository:
+    name: docker-ce
+    state: absent
+
+- name: Remove kubernetes repo
+  yum_repository:
+    name: kubernetes
+    state: absent

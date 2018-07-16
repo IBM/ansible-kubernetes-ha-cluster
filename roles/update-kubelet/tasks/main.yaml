@@ -1,6 +1,6 @@
 - name: drain node
-  shell: kubectl drain {{inventory_hostname}} --ignore-daemonsets
-  delegate_to: "{{ groups['all-masters'][0] }}"
+  shell: kubectl --kubeconfig=/tmp/kubeadm-ha/config drain {{inventory_hostname}} --ignore-daemonsets
+  delegate_to: "{{ groups['k8s-masters'][0] }}"
 
 - name: upgrade kubelet 
   yum:
@@ -27,5 +27,5 @@
     enabled: yes
 
 - name: Bring the host back online
-  shell: kubectl uncordon {{inventory_hostname}}
-  delegate_to: "{{ groups['all-masters'][0] }}"
+  shell: kubectl --kubeconfig=/tmp/kubeadm-ha/config uncordon {{inventory_hostname}}
+  delegate_to: "{{ groups['k8s-masters'][0] }}"

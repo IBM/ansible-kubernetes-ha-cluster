@@ -1,4 +1,5 @@
 ---
+# ------------------- Heapster ------------------- #
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
@@ -34,7 +35,7 @@ spec:
       serviceAccountName: heapster
       containers:
       - name: heapster
-        image: gcr.io/google_containers/heapster-amd64:v1.5.1
+        image: {{heapster_container_image}}
         imagePullPolicy: IfNotPresent
         command:
         - /heapster

@@ -1,10 +1,18 @@
+- include_vars: ../../../../whis-platform/inventory/group_vars/local/vault
 - name: Download cfssl
   get_url:
-    url: https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
+    url: https://na.artifactory.swg-devops.com/artifactory/wh-imaging-prereqs-generic-local/bin/cfssl_linux-amd64
     dest: /usr/local/bin/cfssl
     mode: 0710
+    force_basic_auth: yes
+    url_password: "{{docker_registry_password}}"
+    url_username: "{{docker_registry_username}}"
+    
 - name: Download cfssljson
   get_url:
-    url: https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64
+    url: https://na.artifactory.swg-devops.com/artifactory/wh-imaging-prereqs-generic-local/bin/cfssljson_linux-amd64
     dest: /usr/local/bin/cfssljson
     mode: 0710
+    force_basic_auth: yes
+    url_password: "{{docker_registry_password}}"
+    url_username: "{{docker_registry_username}}"

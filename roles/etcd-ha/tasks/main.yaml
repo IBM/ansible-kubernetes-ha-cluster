@@ -1,9 +1,16 @@
+- include_vars: ../../../../whis-platform/inventory/group_vars/local/vault
 - name: Generate etcd certs for each master node
   shell: |
     cd /etc/kubernetes/pki/etcd
-    cfssl print-defaults csr > config.json
-  args:
-    executable: /bin/bash
+    /usr/local/bin/cfssl print-defaults csr > config.json
+
+- name: Add localhost to the hosts
+  lineinfile:
+    dest: /etc/kubernetes/pki/etcd/config.json
+    regexp: '"localhost",'
+    line:     '"localhost",'
+    insertbefore: '"example.net",'
+    backup: no
 
 - replace:
     path: /etc/kubernetes/pki/etcd/config.json
@@ -26,30 +33,37 @@
 - name: Generate etcd peer certs for each master node
   shell: |
     cd /etc/kubernetes/pki/etcd
-    cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=server config.json | cfssljson -bare server
-  args:
-    executable: /bin/bash
+    /usr/local/bin/cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=server config.json | /usr/local/bin/cfssljson -bare server
+
 
 - name: Generate etcd server certs for each master node
   shell: |
     cd /etc/kubernetes/pki/etcd
-    cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=peer config.json | cfssljson -bare peer
-  args:
-    executable: /bin/bash
+    /usr/local/bin/cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=peer config.json | /usr/local/bin/cfssljson -bare peer
 
-- name: Download and Unarchive etcd
+
+- name: Download etcd
+  get_url:
+    url: https://na.artifactory.swg-devops.com:443/artifactory/wh-imaging-prereqs-generic-local/tars/etcd-{{etcd_version}}-linux-amd64.tar.gz
+    dest: /tmp/
+    mode: 0710
+    force_basic_auth: yes
+    url_password: "{{docker_registry_password}}"
+    url_username: "{{docker_registry_username}}"
+
+- name: Unarchive etcd
   unarchive:
-    src: https://github.com/coreos/etcd/releases/download/{{ etcd_version }}/etcd-{{ etcd_version }}-linux-amd64.tar.gz
+    src: /tmp/etcd-{{etcd_version}}-linux-amd64.tar.gz
     dest: /tmp/
     remote_src: yes
-      
+
 - name: Install etcd
   copy:
     src: /tmp/etcd-{{ etcd_version }}-linux-amd64/etcd
     dest: /usr/local/bin/etcd
     mode: 0710
     remote_src: yes
-    
+
 - name: Install etcdctl
   copy:
     src: /tmp/etcd-{{ etcd_version }}-linux-amd64/etcdctl
@@ -68,8 +82,8 @@
     dest: /etc/etcd.env
 
 - name: start and enable etcd
-  systemd: 
-    name: etcd 
-    enabled: yes 
+  systemd:
+    name: etcd
+    enabled: yes
     daemon_reload: yes
-    state: started
+    state: restarted

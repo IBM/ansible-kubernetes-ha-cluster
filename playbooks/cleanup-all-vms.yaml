@@ -1,4 +1,4 @@
-- hosts: all-vms
+- hosts: k8s-nodes
   become: yes
   gather_facts: no
   ignore_errors: yes

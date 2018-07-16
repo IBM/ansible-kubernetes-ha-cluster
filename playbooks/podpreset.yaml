@@ -1,4 +1,0 @@
-- hosts: all-masters
-  become: yes
-  roles:
-    - kube-apiserver-podpreset

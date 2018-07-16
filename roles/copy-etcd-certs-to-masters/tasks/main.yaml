@@ -1,9 +1,17 @@
 - name: Creates /etc/kubernetes/pki/etcd directory
   file:
-    path: /etc/kubernetes/pki
+    path: /etc/kubernetes/pki/etcd
     state: directory
-- name: CA cert files from master0 to master1 and master2
-  synchronize: 
-    src: /etc/kubernetes/pki/etcd 
-    dest: /etc/kubernetes/pki
-  delegate_to: "{{ groups['all-masters'][0] }}"
+
+- name: "copy {{item}} to other masters"
+  copy: 
+    src: "/tmp/etcd/{{item}}"
+    dest: "/etc/kubernetes/pki/etcd/{{item}}"
+  with_items:
+    - ca-config.json
+    - ca.pem
+    - ca-key.pem
+    - client.pem
+    - client-key.pem 
+      
+          

@@ -1,30 +1,132 @@
-[all-vms]
-<hostname1> ansible_usehost=<ip>  ansible_user=root
-<hostname2> ansible_usehost=<ip>  ansible_user=root
-<hostname3> ansible_usehost=<ip>  ansible_user=root
-<hostname4> ansible_usehost=<ip>  ansible_user=root
-<hostname5> ansible_usehost=<ip>  ansible_user=root
+#DC1 masters
+[dc1-k8s-masters]
+<hostname> ansible_usehost=<ip>
+#DC1 virtualmachines
+[dc1-k8s-workers-vm]
+<hostname> ansible_usehost=<ip>
+#DC1 baremetal
+[dc1-k8s-workers-bm]
+<hostname> ansible_usehost=<ip>
 
-[all-masters]
-<hostname1> ansible_usehost=<ip>  ansible_user=root
-<hostname2> ansible_usehost=<ip>  ansible_user=root
-<hostname3> ansible_usehost=<ip>  ansible_user=root
+[dc1-k8s-workers:children]
+dc1-k8s-workers-bm
+dc1-k8s-workers-vm
 
-[all-workers]
-<hostname4> ansible_usehost=<ip>  ansible_user=root
-<hostname5> ansible_usehost=<ip>  ansible_user=root
+[dc2-k8s-masters]
+<hostname> ansible_usehost=<ip>
 
-[all-masters:vars]
-kubernetes_version=1.10.0
-kubelet_version=1.10.0-0
-kubeadm_version=1.10.0
-etcd_version=v3.1.12
-pod_network_cidr=10.244.0.0/16
-virtual_ip=<vip>
-network_interface=<eth0>
-smoke_test_node_port=31111
+[dc2-k8s-workers-vm]
+<hostname> ansible_usehost=<ip>
 
-[all-vms:vars]
-virtual_ip=<vip>
-cgroup_driver=<cgroup used by docker>
+[dc2-k8s-workers-bm]
+<hostname> ansible_usehost=<ip>
+
+[dc2-k8s-workers:children]
+dc2-k8s-workers-bm
+dc2-k8s-workers-vm
+
+[dc3-k8s-masters]
+<hostname> ansible_usehost=<ip>
+
+[dc3-k8s-workers-vm]
+<hostname> ansible_usehost=<ip>
+
+[dc3-k8s-workers-bm]
+<hostname> ansible_usehost=<ip>
+
+[dc3-k8s-workers:children]
+dc3-k8s-workers-bm
+dc3-k8s-workers-vm
+
+[k8s-masters:children]
+dc1-k8s-masters
+dc2-k8s-masters
+dc3-k8s-masters
+
+[k8s-workers:children]
+dc1-k8s-workers
+dc2-k8s-workers
+dc3-k8s-workers
+
+[dc1-k8s-nodes:children]
+dc1-k8s-masters
+dc1-k8s-workers
+
+[dc2-k8s-nodes:children]
+dc2-k8s-masters
+dc2-k8s-workers
+
+[dc3-k8s-nodes:children]
+dc3-k8s-masters
+dc3-k8s-workers
+
+[k8s-nodes:children]
+dc1-k8s-nodes
+dc2-k8s-nodes
+dc3-k8s-nodes
+
+[k8s-workers-bm:children]
+dc1-k8s-workers-bm
+dc2-k8s-workers-bm
+dc3-k8s-workers-bm
+
+[k8s-workers-vm:children]
+dc1-k8s-workers-vm
+dc2-k8s-workers-vm
+dc3-k8s-workers-vm
+
+[new-k8s-masters]
+
+[new-k8s-workers]
+
+
+#---- Variables -----
+
+[all:vars]
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+docker_version=17.12.1.ce-1.el7.centos
+
+# Kubernetes (k8s) vars...
+kubernetes_version=1.9.6
 kubelet_version=1.9.6-0
+kubeadm_version=1.10.1
+pod_network_cidr=10.244.0.0/16
+# optional vip to be used with keepalived 
+virtual_ip=10.54.235.61
+# change to your interface
+network_interface=eth0
+smoke_test_node_port=31111
+kubelet_workers_eviction_hard=memory.available<10%
+kubelet_masters_eviction_hard=memory.available<10%
+etcd_version=v3.1.12
+haproxy_stats_port=9000
+ha_proxy_port=5446
+# haproxy port for etcd
+etcd_proxy_port=3379
+proxy_port=6443
+image_pull_type=always
+# setup: public or private, put private to use private repo and public to use public repos
+setup=private
+encoded_secret="zm1J79tER3oeEIeQUWT6F1Vdq8Kzj/z54jqR8xj/RRE="
+network_zone=public
+
+# Container images: to be changed if using private docker registry
+flannel_container_image=<docker_registry>/flannel:v0.9.1-amd64
+kubeapi_server_container_image=<docker_registry>/kube-apiserver-amd64:v1.9.6
+kubescheduler_container_image=<docker_registry>/kube-scheduler-amd64:v1.9.6
+kubecontroller_manager_container_image=<docker_registry>/kube-controller-manager-amd64:v1.9.6
+kubeproxy_container_image=<docker_registry>/kube-proxy-amd64:v1.9.6
+haproxy_container_image=<docker_registry>/haproxy:1.5
+heapster_container_image=<docker_registry>/heapster-amd64:v1.5.1
+kubedns_container_image=<docker_registry>/k8s-dns-kube-dns-amd64:1.14.8
+kubednsmasq_container_image=<docker_registry>/k8s-dns-dnsmasq-nanny-amd64:1.14.8
+kubednssidecar_container_image=<docker_registry>/k8s-dns-sidecar-amd64:1.14.8
+kubepause_container_image=<docker_registry>/pause-amd64:3.0
+
+
+# Optional, needed when using private registry
+docker_registry=<docker_registry>
+docker_registry_username=<docker_user>
+docker_registry_password=<docker_password>
+docker_registry_email=<email>
+

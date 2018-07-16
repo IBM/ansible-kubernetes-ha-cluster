@@ -1,0 +1,16 @@
+- hosts: k8s-masters
+  become: yes
+  roles:
+    - config-kube-scheduler-and-controller
+    - {role: config-kube-proxy, when: "groups['k8s-masters'][0] == inventory_hostname"}
+
+- hosts: k8s-masters
+  become: yes
+  serial: 1
+  roles:
+    - config-kube-apiserver 
+
+- hosts: k8s-workers
+  become: yes
+  roles:
+    - config-kubelet

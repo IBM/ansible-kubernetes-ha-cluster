@@ -1,2 +1,12 @@
+- include_vars: ../../../../whis-platform/inventory/group_vars/local/vault
+
+- name: copy flannel yaml
+  template:
+    src: flannel.yaml.j2
+    dest: /tmp/kubeadm-ha/flannel.yaml
+
+- name: Create credentials to access private repository
+  shell: kubectl -n kube-system --kubeconfig=/tmp/kubeadm-ha/config create secret docker-registry regcred --docker-server={{docker_registry}} --docker-username={{docker_registry_username}} --docker-password={{docker_registry_password}} --docker-email={{docker_registry_email}}
+
 - name: Deploy flannel pod network
-  shell: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/v0.9.1/Documentation/kube-flannel.yml
+  shell: kubectl apply --kubeconfig=/tmp/kubeadm-ha/config -f /tmp/kubeadm-ha/flannel.yaml

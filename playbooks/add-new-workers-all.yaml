@@ -1,0 +1,8 @@
+- hosts: new-k8s-workers
+  become: yes
+  roles:
+    - docker
+    - firewalld
+    - kubeadm
+    - kubeadm-join-node
+    - reconfig-kubelet

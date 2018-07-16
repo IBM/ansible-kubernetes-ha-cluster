@@ -1,8 +1,3 @@
-- name: Start firewalld
-  service: 
-    name: firewalld 
-    state: restarted
-
 - name: Enable firewalld service
   systemd:
     state: restarted
@@ -10,40 +5,37 @@
     name: firewalld
     enabled: yes
 
-- name: Open port 6443
-  shell: firewall-cmd --permanent --add-port=6443/tcp
-
-- name: Open port 10250
-  shell: firewall-cmd --permanent --add-port=10250/tcp
-
-- name: Open port 10255
-  shell: firewall-cmd --permanent --add-port=10255/tcp
-
-- name: Open port 10053
-  shell: firewall-cmd --permanent --add-port=10053/tcp
-
-- name: Open port 10053
-  shell: firewall-cmd --permanent --add-port=10053/udp
-
-- name: Open port 2379
-  shell: firewall-cmd --permanent --add-port=2379/tcp
-
-- name: Open port 2380
-  shell: firewall-cmd --permanent --add-port=2380/tcp
-
-- name: Enable firewalld. Allow everything
+- name: Open ports
   firewalld:
-    immediate: yes
-    permanent: yes
+    port: "{{item}}"
+    permanent: true
     state: enabled
-    rich_rule: 'rule family="ipv4" source address="0.0.0.0/0" destination address="0.0.0.0/0" accept'
+  with_items:
+    - 6443/tcp
+    - 5443/tcp
+    - 2379-2380/tcp
+    - 10250/tcp
+    - 10251/tcp
+    - 10252/tcp
+    - 10053/tcp
+    - 10053/udp
+    - 10255/tcp
+    - 30000-32767/tcp
+    - 8082/tcp
+    - 8472/udp
+    - 8285/udp
+    - 9898/tcp
+    - 9100/tcp
+    - 443/tcp
+    - 53/tcp
+    - 53/udp
+    - 4194/tcp
+    - 10254/tcp
 
-- name: Enable firewalld. Allow forward traffic
-  firewalld:
-    immediate: yes
-    permanent: yes
-    state: enabled
-    rich_rule: 'rule family="ipv4" source address="0.0.0.0/0" destination address="0.0.0.0/0" masquerade'
+# Port forwarding requires masquerading - https://www.certdepot.net/rhel7-get-started-firewalld/
+# Network Zones - https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/security_guide/sec-using_firewalls#sec-Understanding_Network_Zones
+- name: Enable IP masquerading
+  shell: "firewall-cmd --permanent --zone={{ network_zone }} --add-masquerade"
 
 - name: Reload firewalld
   shell: firewall-cmd --reload

@@ -1,3 +1,4 @@
+- include_vars: ../../../../whis-platform/inventory/group_vars/local/vault
 - name: copy encryption config file
   template:
     src: enc-config.yaml.j2

@@ -1,4 +1,4 @@
-- hosts: all-masters[0]
+- hosts: k8s-masters[0]
   become: yes
   roles:
     - smoke-test

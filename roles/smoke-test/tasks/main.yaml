@@ -1,5 +1,5 @@
 - name: Wait for all of the nodes to register
-  shell: kubectl get nodes
+  shell: kubectl --kubeconfig=/tmp/kubeadm-ha/config get nodes
   register: result
   until: result.stdout.find("NotReady") == -1
   retries: 20
@@ -12,10 +12,10 @@
     mode: 0644
 
 - name: Deploy smoke test manifest
-  shell: kubectl apply -f /tmp/nginx.yml
+  shell: kubectl --kubeconfig=/tmp/kubeadm-ha/config apply -f /tmp/nginx.yml
 
 - name: Wait for smoke test app to be ready
-  shell: kubectl get po | grep nginx
+  shell: kubectl --kubeconfig=/tmp/kubeadm-ha/config get po | grep nginx
   register: result
   until: result.stdout.find("Running") != -1
   retries: 20
@@ -29,10 +29,10 @@
   shell: "curl http://{{ item }}:{{ smoke_test_node_port }}"
   register: result
   until: result.stdout.find("nginx") != -1
-  with_items: "{{ groups['all-workers'] }}"
+  with_items: "{{ groups['k8s-workers'] }}"
 
 - name: Get kubernetes no, po, svc
-  shell: kubectl get no,po,svc --all-namespaces
+  shell: kubectl --kubeconfig=/tmp/kubeadm-ha/config get no,po,svc --all-namespaces
   register: rslt
 
 - debug: var=rslt.stdout_lines

@@ -4,14 +4,14 @@
     dest: /tmp/heapster.yml
 
 - name: Deploy heapster
-  shell: kubectl apply -f /tmp/heapster.yml
+  shell: kubectl --kubeconfig=/tmp/kubeadm-ha/config apply -f /tmp/heapster.yml
 
 - name: Pausing for 1 minute
   pause:
     minutes: 1
 
 - name: Run kubectl top no
-  shell: kubectl top no
+  shell: kubectl --kubeconfig=/tmp/kubeadm-ha/config top no
   register: result
   until: result.rc == 0
   retries: 20

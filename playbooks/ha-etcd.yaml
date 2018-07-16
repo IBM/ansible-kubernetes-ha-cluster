@@ -1,22 +1,14 @@
-- hosts: all-masters
-  become: yes
-  roles:
-    - setup-cfssl
-
-- hosts: all-masters[0]
-  become: yes
-  roles:
-    - generate-etcd-certs
-   
-- hosts: all-masters
+- hosts: k8s-masters
   become: yes
   vars:
     initial_cluster: |
           {% set comma = joiner(",") %}
-          {% for master in groups["all-masters"] -%}
+          {% for master in groups["k8s-masters"] -%}
               {{ comma() }}{{master}}=https://{{hostvars[master]["ansible_usehost"]}}:2380
           {%- endfor %} \
   roles:
-    - {role: copy-etcd-certs-to-masters, when: "groups['all-masters'][0] != inventory_hostname"}
+    - setup-cfssl
+    - {role: generate-etcd-certs, when: "groups['k8s-masters'][0] == inventory_hostname"}
+    - {role: copy-etcd-certs-to-masters, when: "groups['k8s-masters'][0] != inventory_hostname"}
     - etcd-ha
 

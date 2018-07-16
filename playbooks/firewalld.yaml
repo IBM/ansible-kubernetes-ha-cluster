@@ -1,4 +1,0 @@
-- hosts: all-vms
-  become: yes
-  roles:
-    - firewalld

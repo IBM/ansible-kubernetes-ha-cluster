@@ -1,0 +1,33 @@
+- name: create /opt/ha_config directory
+  file: 
+    path: /opt/hap_config  
+    state: directory 
+    mode: 0644
+
+- name: generate and copy HAproxy config
+  template: 
+    src: haproxyConfig.j2 
+    dest: /opt/hap_config/haproxy.cfg
+  register: hapConfig
+
+- name: "Pulling image {{ haproxy_container_image }}"
+  shell: docker pull "{{ haproxy_container_image }}"
+
+- name: run haproxy in a container
+  docker_container:
+   name: haproxy
+   image: "{{haproxy_container_image}}"
+   restart_policy: always
+   state: started
+   privileged: yes
+   network_mode: host
+   exposed_ports:
+    - "{{ha_proxy_port}}"
+    - "{{etcd_proxy_port}}"
+   volumes:
+    - /opt/hap_config/:/usr/local/etc/haproxy/
+   command: -f /usr/local/etc/haproxy/haproxy.cfg
+
+- name: restart haproxy container if it is started
+  shell: docker restart haproxy
+  when: hapConfig.changed

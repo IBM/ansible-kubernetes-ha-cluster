@@ -1,0 +1,62 @@
+#jinja2:trim_blocks:False
+global
+  log 127.0.0.1 local0
+  maxconn 4096
+  ssl-default-bind-ciphers kEECDH+aRSA+AES:kRSA+AES:+AES256:RC4-SHA:!kEDH:!LOW:!EXP:!MD5:!aNULL:!eNULL
+
+defaults
+  log	global
+  mode	http
+  option	httplog
+  option	dontlognull
+  timeout connect 5s
+  timeout client 50s
+  timeout client-fin 50s
+  timeout server 50s
+  timeout tunnel 1h
+
+listen stats :{{haproxy_stats_port}}
+  mode http
+  stats enable
+  stats hide-version
+  stats realm Haproxy\ Statistics
+  stats uri /haproxy_stats
+  stats auth {{ansible_user_id}}:k8sHA
+
+#############################
+#  api-proxy config
+#############################
+
+
+frontend front-api-proxy
+  bind *:{{ha_proxy_port}}
+  mode tcp
+  option tcplog
+  default_backend back-api-proxy
+
+backend back-api-proxy
+  mode tcp
+  option tcplog
+  balance roundrobin
+  {% for item in groups['k8s-masters'] %}
+    server {{ item }} {{hostvars[item]["ansible_usehost"]}}:6443 check {% if(((item in groups["dc1-k8s-nodes"]) and (inventory_hostname in groups["dc2-k8s-nodes"])) or ((item in groups["dc2-k8s-nodes"]) and (inventory_hostname in groups["dc1-k8s-nodes"])))%}backup{%endif%}
+  {% endfor %}
+
+#############################
+#  etcd config
+#############################
+
+
+frontend front-etcd-proxy
+  bind *:{{etcd_proxy_port}}
+  mode tcp
+  option tcplog
+  default_backend back-etcd-proxy
+
+backend back-etcd-proxy
+  mode tcp
+  option tcplog
+  balance roundrobin
+  {% for item in groups['k8s-masters'] %}
+    server {{ item }} {{hostvars[item]["ansible_usehost"]}}:2379 check {% if(((item in groups["dc1-k8s-nodes"]) and (inventory_hostname in groups["dc2-k8s-nodes"])) or ((item in groups["dc2-k8s-nodes"]) and (inventory_hostname in groups["dc1-k8s-nodes"])))%}backup{%endif%}
+  {% endfor %}

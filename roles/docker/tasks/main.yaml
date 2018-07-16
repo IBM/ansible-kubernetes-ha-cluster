@@ -1,3 +1,18 @@
+- include_vars: ../../../../whis-platform/inventory/group_vars/local/vault
+
+- name: get epel
+  get_url:
+    url: http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+    dest: /tmp/epel-release-latest-7.noarch.rpm
+  when: setup=="public"
+
+- name: install epel
+  become: yes
+  yum: 
+    name: /tmp/epel-release-latest-7.noarch.rpm
+    state: present
+  when: setup=="public"
+   
 - name: install docker dependencies
   become: yes
   yum:
@@ -7,24 +22,35 @@
     - device-mapper-persistent-data
     - lvm2
     - policycoreutils-python
+    - python-pip
 
 - name: Install container-selinux rpm from a remote repo
   yum:
     name: http://ns3.centos.org/7.3.1611/extras/x86_64/Packages/container-selinux-2.9-4.el7.noarch.rpm
     state: present
+  when: setup=="public"
 
+- name: install container-selinux from taas repo
+  become: yes
+  yum:
+    name: container-selinux-2.9-4.el7.noarch
+    state: present
+  when: setup=="private"
+  
 # can be needed in some systems
 #  - name: Enable extra repos
-#    command: subscription-manager repos --enable=rhel-7-server-extras-rpms
-
-- name: Add docker-ce repo
-  command: yum-config-manager  --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-
+#   command: subscription-manager repos --enable=rhel-7-server-extras-rpms
 
 - name: Installs docker
   yum: 
-    name: docker-ce # docker in some distros
+    name: docker-ce-{{docker_version}} # docker in some distros
     state: installed     
+
+- name: Install docker-py
+  pip:
+    name: docker-py
+    extra_args: -i https://{{docker_registry_username| trim}}:{{docker_registry_password| trim}}@na.artifactory.swg-devops.com/artifactory/api/pypi/wh-imaging-pypi-local/simple
+
 
 - name: restart docker
   systemd: 
@@ -32,3 +58,10 @@
     state: restarted
     daemon_reload: yes
     enabled: yes
+
+- name: Logging to private docker registry
+  docker_login:
+    registry: "{{ docker_registry }}"
+    username: "{{ docker_registry_username }}"
+    password: "{{ docker_registry_password }}"
+    reauthorize: yes

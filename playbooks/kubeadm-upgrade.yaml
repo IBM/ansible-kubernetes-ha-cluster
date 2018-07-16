@@ -1,4 +1,4 @@
-- hosts: all-masters[0]
+- hosts: k8s-masters[0]
   become: yes
   vars:
     upgrade_version: v1.9.6
@@ -7,11 +7,11 @@
   roles:
     - kubeadm-upgrade
 
-- hosts: all-vms
+- hosts: all
   serial: 1
   become: yes
   vars:
     kubelet_version: latest
   roles:
-    - { role: update-kubelet, when: "groups['all-masters'][0] != inventory_hostname" }
+    - update-kubelet
 

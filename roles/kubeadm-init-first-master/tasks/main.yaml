@@ -1,5 +1,5 @@
 - name: Kubeadm init
-  shell: kubeadm init --config=/tmp/kubeadm-ha/kubeadm-config.yaml --ignore-preflight-errors=all
+  shell: kubeadm init --config=/tmp/kubeadm-ha/kubeadm-config.yaml
   register: rslt
 
 - name: Store init output
@@ -19,3 +19,20 @@
     owner: "{{ ansible_ssh_user }}"
     group: "{{ ansible_ssh_user }}"
     remote_src: yes
+
+- name: Copy admin.conf to /tmp/kubeadm-ha/config
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: "/tmp/kubeadm-ha/config"
+    remote_src: yes
+
+- name: "Fetching {{item}} from master0"
+  fetch:
+    src: /etc/kubernetes/pki/{{item}}
+    dest: /tmp/pki/{{item}}
+    flat: yes
+  with_items:
+    - ca.crt
+    - ca.key
+    - sa.key
+    - sa.pub

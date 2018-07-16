@@ -1,10 +1,10 @@
-- name: Read kubeadm init output
-  shell: cat {{ kubeadm_join_cmd_file_path }}
-  register: kubeadm_join_cmd_file_content
-  delegate_to: "{{ groups['all-masters'][0] }}"
+- name: Generate join token
+  shell: kubeadm token create --print-join-command
+  register: kubeadm_join_cmd
+  delegate_to: "{{ groups['k8s-masters'][0] }}"
 
 - set_fact:
-    kubeadm_join: "{{ kubeadm_join_cmd_file_content.stdout | regex_replace('(?s).*(kubeadm join.*)$', '\\1') }}"
+    kubeadm_join: "{{ kubeadm_join_cmd.stdout }}"
 
 - debug: var=kubeadm_join
 

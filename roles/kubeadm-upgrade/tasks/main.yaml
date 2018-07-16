@@ -3,8 +3,10 @@
     name: kubeadm
     state: "{{kubeadm_version}}"
     
-- pip:
+- name: pip install pexpect
+  pip:
     name: pexpect
+    extra_args: -i https://{{docker_registry_username| trim}}:{{docker_registry_password| trim}}@na.artifactory.swg-devops.com/artifactory/api/pypi/wh-imaging-pypi-local/simple
 
 - name: Run kubeadm upgrade
   expect:

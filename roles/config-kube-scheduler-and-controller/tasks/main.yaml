@@ -10,12 +10,15 @@
     - /etc/kubernetes/manifests/kube-scheduler.yaml
     - /etc/kubernetes/manifests/kube-controller-manager.yaml
 
-- name: restart docker
-  systemd: 
-    name: docker 
-    state: restarted
-    daemon_reload: yes
-    enabled: yes
+- replace:
+    path: "{{item}}"
+    regexp: 'server:.*'
+    replace: "server: https://localhost:{{ha_proxy_port}}"
+    backup: no
+  with_items:
+    - /etc/kubernetes/scheduler.conf
+    - /etc/kubernetes/controller-manager.conf
+    - /etc/kubernetes/kubelet.conf
     
 - name: restart kubelet
   systemd: 
