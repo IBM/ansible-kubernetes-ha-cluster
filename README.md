@@ -1,9 +1,9 @@
-# Ansible Playbooks To setup Kubernetes HA on Redhat Enterprise Linux 7.  
+# Ansible Playbooks To setup cross-datacenters Kubernetes HA (multi-master) on Redhat Enterprise Linux 7.  
 
 This repository provides Ansible Playbooks To setup Kubernetes HA on Redhat Enterprise Linux 7. The playbooks are mainly inspired by Kubeadm documentation and other ansible tentatives on github. The playbooks could be used separately or as one playbook for a fully fledged HA cluster. 
 
 
-#Prerequisites: 
+# Prerequisites: 
 
 RHEL 7.2+
 On your manager machine install python pip:
